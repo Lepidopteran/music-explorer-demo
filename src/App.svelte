@@ -32,39 +32,50 @@
     }
   }
 
-	let dragCounter = $state(0);
+  let dragCounter = $state(0);
   let isDragging = $derived(dragCounter > 0);
 
   function ondragenter(event: DragEvent) {
     event.preventDefault();
-		dragCounter++;
+    dragCounter++;
   }
 
   function ondragleave(event: DragEvent) {
     event.preventDefault();
-		dragCounter--;
+    dragCounter--;
   }
 
   function ondragover(event: DragEvent) {
-    const fileItems = [...event.dataTransfer!.items].filter(
+    if (!event.dataTransfer) {
+      return;
+    }
+
+    const items = [...event.dataTransfer.items];
+    const fileItems = [...event.dataTransfer.items].filter(
       (item) => item.kind === "file",
     );
+
     if (fileItems.length > 0) {
       event.preventDefault();
-      event.dataTransfer!.dropEffect = "copy";
+      event.dataTransfer.dropEffect = "copy";
     }
   }
 
   let progressMessage = $state("");
 
-	// TODO: use async/await instead of this mess :/
-  function ondrop(event: DragEvent) {
+  async function ondrop(event: DragEvent) {
     event.preventDefault();
     songs.clear();
-		dragCounter = 0;
-		activeIndex = -1;
+    dragCounter = 0;
+    activeIndex = -1;
 
-    const files = [...event.dataTransfer!.items]
+    console.debug("drop", event.dataTransfer!.items.length);
+    const items = event.dataTransfer!.items;
+    await readItems(items);
+  }
+
+  async function readItems(items: DataTransferItemList) {
+    const files = [...items]
       .filter((item) => item.kind === "file")
       .map((item) => item.webkitGetAsEntry())
       .filter(Boolean);
@@ -77,41 +88,47 @@
           readSongs,
         );
       } else if (entry?.isFile) {
-        (entry as FileSystemFileEntry).file((file) => {
-          if (!file.type.startsWith("application/")) {
-            getAudioMetadata(file);
-          } else {
-            const reader = new ZipReader(new BlobReader(file));
-
-            progressMessage = `Extracting ${file.name}...`;
-            reader.getEntries().then((entries) => {
-              for (const entry of entries) {
-                if (entry.directory) {
-                  continue;
-                }
-
-                let writer = new BlobWriter();
-                entry.getData(writer);
-
-                writer.getData().then((data) => {
-                  fileTypeFromBlob(data).then((type) => {
-                    if (
-                      type?.mime.startsWith("audio/") ||
-                      type?.mime.startsWith("video/")
-                    ) {
-                      progressMessage = `Processing ${entry.filename}...`;
-                      parseBlob(data).then((metadata) => {
-                        songs.add(metadata);
-
-                        progressMessage = String();
-                      });
-                    }
-                  });
-                });
-              }
-            });
-          }
+        (entry as FileSystemFileEntry).file(async (file) => {
+          await readFile(file);
         });
+      }
+    }
+  }
+
+  async function readFile(file: File) {
+    if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
+      getAudioMetadata(file);
+    } else if (["zip", "x-zip-compressed"].includes(file.type.split("/")[1])) {
+      await readZip(file);
+    }
+  }
+
+  async function readZip(file: File) {
+    const reader = new ZipReader(new BlobReader(file));
+
+    progressMessage = `Extracting ${file.name}...`;
+    const entries = await reader.getEntries();
+
+    for (const entry of entries) {
+      if (entry.directory) {
+        continue;
+      }
+
+      let writer = new BlobWriter();
+      await entry.getData(writer);
+
+      const data = await writer.getData();
+      const fileType = await fileTypeFromBlob(data);
+
+      if (
+        fileType?.mime.startsWith("audio/") ||
+        fileType?.mime.startsWith("video/")
+      ) {
+        progressMessage = `Processing ${entry.filename}...`;
+        const metadata = await parseBlob(data);
+        songs.add(metadata);
+
+        progressMessage = String();
       }
     }
   }
