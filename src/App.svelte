@@ -6,6 +6,8 @@
   import MusicDetails from "./components/MusicDetails.svelte";
   import MusicCard from "./components/MusicCard.svelte";
   import { slide } from "svelte/transition";
+  import Button from "./components/Button.svelte";
+  import Icon from "@iconify/svelte";
 
   let dropZone: HTMLElement;
   function handleWindowDrop(event: DragEvent) {
@@ -173,6 +175,8 @@
     }
   }
 
+  let fileInput: HTMLInputElement | null = $state(null);
+  let folderInput: HTMLInputElement | null = $state(null);
   let songs = $state(new SvelteSet<IAudioMetadata>());
   let activeIndex = $state(-1);
 </script>
@@ -186,24 +190,62 @@
   bind:this={dropZone}
   {ondragover}
   {ondrop}
-	{ondragenter}
-	{ondragleave}
+  {ondragenter}
+  {ondragleave}
   class={[
-    "h-full overflow-auto p-4 transition-all",
-    isDragging
-      ? "bg-neutral-900/50 border-dashed border-2 border-neutral-700"
-      : "",
+    "h-full overflow-auto p-4 transition-all border-2 border-dashed relative",
+    isDragging ? "bg-neutral-900/50 border-neutral-700" : "border-transparent",
   ]}
 >
+  <input
+    bind:this={fileInput}
+    type="file"
+    accept="audio/*, video/*, application/zip, application/x-zip-compressed"
+    multiple
+    hidden
+    onchange={async (event) => {
+      event.preventDefault();
+      for (const file of (event.target as HTMLInputElement).files ?? []) {
+        await readFile(file);
+      }
+    }}
+  />
+
+  <input
+    bind:this={folderInput}
+    type="file"
+    webkitdirectory
+    hidden
+    onchange={async (event) => {
+      event.preventDefault();
+      for (const file of (event.target as HTMLInputElement).files ?? []) {
+        await readFile(file);
+      }
+    }}
+  />
+
   {#if songs.size === 0}
-    <div class="flex flex-col justify-center items-center h-full">
-      <h2 class="text-xl opacity-50">
-        {#if progressMessage}
-          {progressMessage}
-        {:else}
-          Drop audio files here to get started
-        {/if}
-      </h2>
+    <div class="flex flex-col gap-2 justify-center items-center h-full">
+      {#if progressMessage}
+        <h2 class="text-center">{progressMessage}</h2>
+      {:else}
+        <h2 class="text-center">
+          <span class="block">
+            Drag and drop audio/zip files or folders here.
+          </span>
+        </h2>
+        <span class="block opacity-50"> or </span>
+        <div class="flex gap-2 items-center">
+          <Button onclick={() => fileInput?.click()}>
+            <Icon icon="mingcute:file-fill" class="mr-2" />
+            Import files
+          </Button>
+          <Button onclick={() => folderInput?.click()}>
+            <Icon icon="mingcute:folder-fill" class="mr-2" />
+            Import folder
+          </Button>
+        </div>
+      {/if}
     </div>
   {:else}
     <div class="flex flex-wrap gap-4">
