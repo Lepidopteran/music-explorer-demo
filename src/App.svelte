@@ -52,7 +52,6 @@
       return;
     }
 
-    const items = [...event.dataTransfer.items];
     const fileItems = [...event.dataTransfer.items].filter(
       (item) => item.kind === "file",
     );
