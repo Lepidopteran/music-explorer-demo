@@ -186,11 +186,14 @@
   class="flex items-center p-4 shadow-md inset-shadow-sm shadow-black/20 inset-shadow-neutral-500/50 bg-neutral-900 col-span-full"
 >
   <div class="inline-flex w-1/2 items-center space-x-2">
-    <h1 class="text-xl font-bold">Music Metadata Explorer <span class="opacity-50 text-sm font-normal">v{__APP_VERSION__}</span></h1>
+    <h1 class="text-xl font-bold">
+      Music Metadata Explorer <span class="opacity-50 text-sm font-normal"
+        >v{__APP_VERSION__}</span
+      >
+    </h1>
   </div>
   <div class="inline-flex items-center space-x-2"></div>
-  <div class="inline-flex w-1/2 justify-end items-center space-x-2">
-  </div>
+  <div class="inline-flex w-1/2 justify-end items-center space-x-2"></div>
 </header>
 <aside class="bg-neutral-800"></aside>
 <main
