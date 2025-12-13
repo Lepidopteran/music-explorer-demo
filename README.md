@@ -7,7 +7,7 @@ A _little_ experiment to see how to read folders recursively, like to how [`Immi
 To run the demo, run the `dev` script to start the development server.
 
 ```bash
-bun run dev
+deno run dev
 ```
 
 ## Dependencies
