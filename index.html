@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,7 +7,26 @@
     <title>Music Explorer Demo</title>
   </head>
   <body>
-    <div id="app" class="h-full grid grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr_auto] overflow-hidden"></div>
+    <div class="absolute">
+      <svg>
+        <defs>
+          <filter id="noise">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.5"
+              numOctaves="2"
+              result="warp"
+            />
+            <feComposite in="SourceGraphic" in2="warp" operator="out" />
+          </filter>
+        </defs>
+      </svg>
+    </div>
+    <div
+      id="app"
+      class="h-full grid grid-cols-1 md:grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr_auto] overflow-hidden relative"
+    >
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

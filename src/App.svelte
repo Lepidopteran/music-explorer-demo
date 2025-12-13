@@ -181,6 +181,24 @@
 </script>
 
 <svelte:window ondrop={handleWindowDrop} ondragover={handleWindowDragOver} />
+
+<div class="absolute top-0 left-0 size-full overflow-hidden">
+  <svg>
+    <defs>
+      <filter id="noise">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.5"
+          numOctaves="2"
+          result="warp"
+        />
+        <feComposite in="SourceGraphic" in2="warp" operator="out" />
+      </filter>
+    </defs>
+  </svg>
+	<div class="absolute top-0 left-0 size-full bg-neutral-900/50" style="filter: url('#noise')"></div>
+</div>
+
 <header
   class="flex shadow-md inset-shadow-sm shadow-black/20 inset-shadow-black/50 col-span-full"
 ></header>

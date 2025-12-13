@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
 @layer base {
-	body {
-		background-color: var(--color-neutral-800);
-		color: var(--color-neutral-50);
-		height: 100svh;
-		color-scheme: dark;
-	}
+  body {
+    background-color: var(--color-neutral-800);
+    color: var(--color-neutral-50);
+    height: 100svh;
+    color-scheme: dark;
+  }
+
+  .noise {
+    filter: url("#noise");
+  }
 }
